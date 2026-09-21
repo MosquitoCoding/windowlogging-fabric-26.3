@@ -32,7 +32,7 @@ public class ClientLevelMixin {
 			at = @At(value = "INVOKE",
 				target = "Lnet/minecraft/world/level/block/state/BlockState;getShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/shapes/VoxelShape;"))
 	private VoxelShape redirectGetShapeBreakingBlockEffects(
-			BlockState instance, BlockGetter blockGetter, BlockPos blockPos) {
+			BlockState instance, BlockAndTintGetter blockGetter, BlockPos blockPos) {
 		return getShape(instance, blockGetter, blockPos);
 	}
 
