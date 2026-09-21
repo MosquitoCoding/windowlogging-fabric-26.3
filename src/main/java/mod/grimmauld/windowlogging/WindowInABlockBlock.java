@@ -1,6 +1,5 @@
 package mod.grimmauld.windowlogging;
 
-import com.mojang.logging.annotations.MethodsReturnNonnullByDefault;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -15,6 +14,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.*;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,7 +34,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 
-@MethodsReturnNonnullByDefault
 public class WindowInABlockBlock extends IronBarsBlock implements EntityBlock {
 
 	public WindowInABlockBlock(ResourceKey<Block> key) {
@@ -52,7 +52,7 @@ public class WindowInABlockBlock extends IronBarsBlock implements EntityBlock {
 	}
 
 	@Override
-	public void playerDestroy(@NonNull Level level, @NonNull Player player, @NonNull BlockPos blockPos, @NonNull BlockState blockState, @Nullable BlockEntity blockEntity, @NonNull ItemStack itemStack) {
+	public void playerDestroy(@NonNull ServerLevel level, @NonNull ServerPlayer player, @NonNull BlockPos blockPos, @NonNull BlockState blockState, @Nullable BlockEntity blockEntity, @NonNull ItemStack itemStack) {
 		if (destroyedState == null) return;
 		destroyedState.getBlock().playerDestroy(level, player, blockPos, destroyedState, level.getBlockEntity(blockPos), itemStack);
 		destroyedState = null;
@@ -150,7 +150,7 @@ public class WindowInABlockBlock extends IronBarsBlock implements EntityBlock {
 	public List<ItemStack> dropHelper(@NonNull BlockState block, LootParams.@NonNull Builder builder) {
 		LootParams.Builder newBuilder = new LootParams.Builder(builder.getLevel());
 		newBuilder.withParameter(LootContextParams.ORIGIN, builder.getParameter(LootContextParams.ORIGIN));
-		ItemStack tool = builder.getOptionalParameter(LootContextParams.TOOL);
+		net.minecraft.world.item.ItemInstance tool = builder.getOptionalParameter(LootContextParams.TOOL);
 		if (tool != null) newBuilder.withParameter(LootContextParams.TOOL, tool);
 		Entity entity = builder.getOptionalParameter(LootContextParams.THIS_ENTITY);
 		if (entity != null) newBuilder.withOptionalParameter(LootContextParams.THIS_ENTITY, entity);
