@@ -30,14 +30,14 @@ public class ClientLevelMixin {
 	@Redirect(
 			method = "addBreakingBlockEffects",
 			at = @At(value = "INVOKE",
-				target = "Lnet/minecraft/world/level/block/state/BlockState;getShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/shapes/VoxelShape;"))
+				target = "Lnet/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase;getShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/shapes/VoxelShape;"))
 	private VoxelShape redirectGetShapeBreakingBlockEffects(
-			BlockState instance, BlockAndTintGetter blockGetter, BlockPos blockPos) {
+			BlockState instance, BlockGetter blockGetter, BlockPos blockPos) {
 		return getShape(instance, blockGetter, blockPos);
 	}
 
 	@Unique
-	private VoxelShape getShape(BlockState instance, BlockAndTintGetter blockGetter, BlockPos blockPos) {
+	private VoxelShape getShape(BlockState instance, BlockGetter blockGetter, BlockPos blockPos) {
 		if (instance.getBlock() instanceof WindowInABlockBlock wbb) {
 			WindowInABlockTileEntity wte = wbb.getTileEntity(blockGetter, blockPos);
 			if (wte != null && wte.hoveredBlock != Blocks.AIR.defaultBlockState())
