@@ -74,7 +74,7 @@ public class EventListener {
 
 		if (!player.isCreative())
 			stack.shrink(1);
-		player.swing(hand, stack.getSwingAnimation(), true);
+		player.swing(hand, stack.getAttackAnimation(), true);
 		return true;
 	}
 }
