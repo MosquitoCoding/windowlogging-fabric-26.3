@@ -3,7 +3,7 @@ package mod.grimmauld.windowlogging;
 import com.mojang.logging.annotations.MethodsReturnNonnullByDefault;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;
+import net.fabricmc.fabric.api.blockgetter.v2.RenderDataBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -23,13 +23,12 @@ public class WindowInABlockTileEntity extends BlockEntity implements RenderDataB
 	private BlockState partialBlock = Blocks.AIR.defaultBlockState();
 	private BlockState windowBlock = Blocks.AIR.defaultBlockState();
 	private CompoundTag partialBlockTileData = new CompoundTag();
-	private BlockEntity partialBlockTileEntity = null;
+	private BlockEntity partialBlockTileEntity;
 	@Environment(EnvType.CLIENT)
 	public BlockState hoveredBlock = Blocks.AIR.defaultBlockState();
 
 	public WindowInABlockTileEntity(BlockPos pos, BlockState blockState) {
 		super(Windowlogging.WINDOW_IN_A_BLOCK_TILE_ENTITY, pos, blockState);
-		setPartialBlockTileData(new CompoundTag());
 	}
 
 	public CompoundTag getPartialBlockTileData() {
@@ -38,6 +37,7 @@ public class WindowInABlockTileEntity extends BlockEntity implements RenderDataB
 
 	public void setPartialBlockTileData(CompoundTag partialBlockTileData) {
 		this.partialBlockTileData = partialBlockTileData;
+		this.partialBlockTileEntity = null;
 	}
 
 	@Override
@@ -46,27 +46,27 @@ public class WindowInABlockTileEntity extends BlockEntity implements RenderDataB
 		partialBlock = input.read("PartialBlock", BlockState.CODEC).orElse(Blocks.AIR.defaultBlockState());
 		windowBlock = input.read("WindowBlock", BlockState.CODEC).orElse(Blocks.AIR.defaultBlockState());
 		setPartialBlockTileData(input.read("PartialData", CompoundTag.CODEC).orElse(new CompoundTag()));
-		requestModelDataUpdate();
 	}
 
 	@Override
 	protected void saveAdditional(@NonNull ValueOutput output) {
 		super.saveAdditional(output);
-		output.store("PartialBlock", BlockState.CODEC, getPartialBlock());
-		output.store("WindowBlock", BlockState.CODEC, getWindowBlock());
-		output.store("PartialData", net.minecraft.nbt.CompoundTag.CODEC, partialBlockTileData);
+		output.store("PartialBlock", BlockState.CODEC, partialBlock);
+		output.store("WindowBlock", BlockState.CODEC, windowBlock);
+		output.store("PartialData", CompoundTag.CODEC, partialBlockTileData);
 	}
 
 	public void updateWindowConnections() {
 		if (level == null)
 			return;
+
 		for (Direction side : Direction.values()) {
 			BlockPos offsetPos = worldPosition.relative(side);
-//			BlockState windowNeighborState =
-//					WindowInABlockBlock.resolveWindowNeighborState(level, offsetPos, level.getBlockState(offsetPos));
-			windowBlock = getWindowBlock().updateShape(level, level, worldPosition, side, offsetPos,
+			windowBlock = windowBlock.updateShape(
+					level, level, worldPosition, side, offsetPos,
 					level.getBlockState(offsetPos), level.getRandom());
 		}
+
 		level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2 | 16);
 		setChanged();
 	}
@@ -76,15 +76,9 @@ public class WindowInABlockTileEntity extends BlockEntity implements RenderDataB
 		return this;
 	}
 
-	/**
-	 * Forge cached {@code ModelData} per block entity and required an explicit
-	 * {@code requestModelDataUpdate()} call any time it changed, invalidating that cache.
-	 * Fabric's {@link RenderDataBlockEntity#getRenderData()} is instead re-queried by the renderer
-	 * on every frame, so there is no cache to invalidate - this method is kept as a no-op purely so
-	 * existing call sites (which mirror the upstream Forge code closely) don't need touching.
-	 * {@code setChanged()} still needs to be called separately wherever persisted state changes.
-	 */
-	public void requestModelDataUpdate() {}
+	public void requestModelDataUpdate() {
+		// Kept for compatibility with the old implementation; Fabric render data is queried directly.
+	}
 
 	public BlockState getPartialBlock() {
 		return partialBlock;
@@ -92,6 +86,7 @@ public class WindowInABlockTileEntity extends BlockEntity implements RenderDataB
 
 	public void setPartialBlock(BlockState partialBlock) {
 		this.partialBlock = partialBlock;
+		this.partialBlockTileEntity = null;
 	}
 
 	public BlockState getWindowBlock() {
@@ -114,13 +109,14 @@ public class WindowInABlockTileEntity extends BlockEntity implements RenderDataB
 
 	@Nullable
 	public BlockEntity getPartialBlockTileEntityIfPresent() {
-		if (!(getPartialBlock() instanceof EntityBlock entityBlock) || level == null)
+		if (!(partialBlock instanceof EntityBlock entityBlock) || level == null)
 			return null;
+
 		if (partialBlockTileEntity == null) {
 			try {
 				partialBlockTileEntity = entityBlock.newBlockEntity(worldPosition, partialBlock);
 				if (partialBlockTileEntity != null) {
-					partialBlockTileEntity.setBlockState(getPartialBlock());
+					partialBlockTileEntity.setBlockState(partialBlock);
 					partialBlockTileEntity.loadWithComponents(
 						NbtBridge.toValueInput(level.registryAccess(), partialBlockTileData));
 					partialBlockTileEntity.setLevel(level);
