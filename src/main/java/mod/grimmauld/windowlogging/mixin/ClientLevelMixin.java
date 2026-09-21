@@ -13,39 +13,38 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Environment(EnvType.CLIENT)
 @Mixin(ClientLevel.class)
 public class ClientLevelMixin {
-	@Redirect(
+	@ModifyVariable(
 			method = "addDestroyBlockEffect",
-			at = @At(value = "INVOKE",
-				target = "Lnet/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase;getShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/shapes/VoxelShape;"))
-	private VoxelShape redirectGetShapeDestroyBlockEffect(
-			BlockState instance, BlockGetter blockGetter, BlockPos blockPos) {
-		return getShape(instance, blockGetter, blockPos);
+			at = @At("HEAD"),
+			argsOnly = true
+	)
+	private BlockState modifyDestroyBlockEffectState(BlockState state) {
+		return getShapeState(state, (ClientLevel) (Object) this, null);
 	}
 
-	@Redirect(
+	@ModifyVariable(
 			method = "addBreakingBlockEffects",
-			at = @At(value = "INVOKE",
-				target = "Lnet/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase;getShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/shapes/VoxelShape;"))
-	private VoxelShape redirectGetShapeBreakingBlockEffects(
-			BlockState instance, BlockGetter blockGetter, BlockPos blockPos) {
-		return getShape(instance, blockGetter, blockPos);
+			at = @At("STORE"),
+			ordinal = 0
+	)
+	private BlockState modifyBreakingBlockEffectsState(BlockState state) {
+		return getShapeState(state, (ClientLevel) (Object) this, null);
 	}
 
 	@Unique
-	private VoxelShape getShape(BlockState instance, BlockGetter blockGetter, BlockPos blockPos) {
-		if (instance.getBlock() instanceof WindowInABlockBlock wbb) {
-			WindowInABlockTileEntity wte = wbb.getTileEntity(blockGetter, blockPos);
-			if (wte != null && wte.hoveredBlock != Blocks.AIR.defaultBlockState())
-				return wte.hoveredBlock.getShape(blockGetter, blockPos);
-
-			return wbb.getCombinedShape(instance, blockGetter, blockPos);
+	private static BlockState getShapeState(BlockState state, BlockGetter level, BlockPos pos) {
+		if (state.getBlock() instanceof WindowInABlockBlock wbb) {
+			if (pos != null) {
+				WindowInABlockTileEntity wte = wbb.getTileEntity(level, pos);
+				if (wte != null && wte.hoveredBlock != Blocks.AIR.defaultBlockState())
+					return wte.hoveredBlock;
+			}
 		}
-
-		return instance.getShape(blockGetter, blockPos);
+		return state;
 	}
 }
