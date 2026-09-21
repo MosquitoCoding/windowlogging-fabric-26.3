@@ -6,7 +6,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -21,9 +21,9 @@ public class ClientLevelMixin {
 	@Redirect(
 			method = "addDestroyBlockEffect",
 			at = @At(value = "INVOKE",
-				target = "Lnet/minecraft/world/level/block/state/BlockState;getShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/shapes/VoxelShape;"))
+				target = "Lnet/minecraft/world/level/block/state/BlockState;getShape(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/shapes/VoxelShape;"))
 	private VoxelShape redirectGetShapeDestroyBlockEffect(
-			BlockState instance, BlockGetter blockGetter, BlockPos blockPos) {
+			BlockState instance, BlockAndTintGetter blockGetter, BlockPos blockPos) {
 		return getShape(instance, blockGetter, blockPos);
 	}
 
