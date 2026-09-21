@@ -1,6 +1,5 @@
 package mod.grimmauld.windowlogging;
 
-import com.mojang.logging.annotations.MethodsReturnNonnullByDefault;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockgetter.v2.RenderDataBlockEntity;
@@ -18,7 +17,6 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-@MethodsReturnNonnullByDefault
 public class WindowInABlockTileEntity extends BlockEntity implements RenderDataBlockEntity {
 	private BlockState partialBlock = Blocks.AIR.defaultBlockState();
 	private BlockState windowBlock = Blocks.AIR.defaultBlockState();
