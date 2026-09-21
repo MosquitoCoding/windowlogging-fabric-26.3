@@ -37,7 +37,7 @@ public class ClientLevelMixin {
 	}
 
 	@Unique
-	private VoxelShape getShape(BlockState instance, BlockGetter blockGetter, BlockPos blockPos) {
+	private VoxelShape getShape(BlockState instance, BlockAndTintGetter blockGetter, BlockPos blockPos) {
 		if (instance.getBlock() instanceof WindowInABlockBlock wbb) {
 			WindowInABlockTileEntity wte = wbb.getTileEntity(blockGetter, blockPos);
 			if (wte != null && wte.hoveredBlock != Blocks.AIR.defaultBlockState())
