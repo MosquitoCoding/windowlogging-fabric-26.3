@@ -5,6 +5,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -73,7 +74,7 @@ public class EventListener {
 
 		if (!player.isCreative())
 			stack.shrink(1);
-		player.swing(hand);
+		player.swing(hand, stack.getSwingAnimation(), true);
 		return true;
 	}
 }
