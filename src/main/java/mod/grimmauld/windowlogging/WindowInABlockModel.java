@@ -1,6 +1,5 @@
 package mod.grimmauld.windowlogging;
 
-import com.mojang.logging.annotations.MethodsReturnNonnullByDefault;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockgetter.v2.FabricBlockGetter;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.function.Predicate;
 
 @Environment(EnvType.CLIENT)
-@MethodsReturnNonnullByDefault
 public class WindowInABlockModel implements BlockStateModel {
 	private final BlockStateModel wrapped;
 
@@ -103,13 +101,6 @@ public class WindowInABlockModel implements BlockStateModel {
 		return new GeometryKey(partialKey, windowKey);
 	}
 
-	@Override
-	public Material.Baked particleMaterial(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random) {
-		WindowInABlockTileEntity wte = renderDataOf(level, pos);
-		if (wte == null || wte.hoveredBlock.is(Blocks.AIR))
-			return wrapped.particleMaterial(level, pos, state, random);
-		return modelOf(wte.hoveredBlock).particleMaterial(level, pos, state, random);
-	}
 
 	@Override
 	@BakedQuad.MaterialFlags
